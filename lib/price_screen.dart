@@ -14,14 +14,17 @@ class _PriceScreenState extends State<PriceScreen> {
   String currency = 'USD';
   String rates = '12345';
 //initialization of Currency to show in DropDownMenuList
-  String selectedCurreny = 'USD';
+  String _selectedCurrency = 'USD';
   //Initializing a String to put in URL selected by person
   String selectedByPerson;
+  String _selector = '';
+  FixedExtentScrollController _controller =
+      FixedExtentScrollController(initialItem: 19);
 
   @override
   void initState() {
     super.initState();
-    updateUI(selectedCurreny);
+    updateUI(_selectedCurrency);
   }
 
   //Android DropdownMenuItem List
@@ -36,14 +39,14 @@ class _PriceScreenState extends State<PriceScreen> {
       );
     }
     return DropdownButton<String>(
-      value: selectedCurreny,
+      value: _selectedCurrency,
       items: dropDownMenuList,
       onChanged: (value) {
         setState(() {
-          selectedCurreny = value;
+          _selectedCurrency = value;
         });
-        updateUI(selectedCurreny);
-        return selectedCurreny;
+        updateUI(_selectedCurrency);
+        return _selectedCurrency;
       },
     );
   }
@@ -64,8 +67,10 @@ class _PriceScreenState extends State<PriceScreen> {
     return NotificationListener<ScrollNotification>(
       onNotification: (scrollNotification) {
         if (scrollNotification is ScrollEndNotification) {
-          //Will only update when user has stopped scrolling in picker.
-
+          // print(currenciesList[_controller.selectedItem]);
+          setState(() {
+            _selectedCurrency = currenciesList[_controller.selectedItem];
+          });
           return true;
         } else {
           return false;
@@ -73,11 +78,11 @@ class _PriceScreenState extends State<PriceScreen> {
       },
       child: CupertinoPicker(
         itemExtent: 30,
-        scrollController: FixedExtentScrollController(initialItem: 19),
+        scrollController: _controller,
         onSelectedItemChanged: (selectedIndex) {
-          selectedCurreny = currenciesList[selectedIndex];
-          updateUI(selectedCurreny);
-          print(selectedCurreny);
+          _selector = currenciesList[selectedIndex];
+          updateUI(_selectedCurrency);
+          print(_selectedCurrency);
         },
         children: textWidgetList,
       ),
@@ -86,7 +91,7 @@ class _PriceScreenState extends State<PriceScreen> {
 
   Future updateUI(String selectACurrency) async {
     try {
-      var coinAPIData = await CoinData().coinAPI(selectedCurreny);
+      var coinAPIData = await CoinData().coinAPI(_selectedCurrency);
       setState(() {
         coin = coinAPIData['asset_id_base'];
         currency = coinAPIData['asset_id_quote'];

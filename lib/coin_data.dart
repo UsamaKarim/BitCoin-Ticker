@@ -39,12 +39,12 @@ class CoinData {
   Future<dynamic> coinAPI(String selectACurrency) async {
     for (String coinList in cryptoList) {}
     http.Response response = await http.get(
-        'https://rest.coinapi.io/v1/exchangerate/BTC/$selectACurrency?apikey=$apiKey');
+        'https://rest.coinapi.io/v1/exchangerate/BTC/$selectACurrency?apikey=$apiKey2');
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
       print(response.statusCode);
-      throw 'Your reached max API Calls for today';
+      throw 'Your reached limit of max API Calls for today';
     }
   }
 }
