@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 const apiKey = 'B386BF07-13E0-42BA-8900-874B024B2ED9';
@@ -36,15 +35,21 @@ const List<String> cryptoList = [
 ];
 
 class CoinData {
-  Future<dynamic> coinAPI(String selectACurrency) async {
-    for (String coinList in cryptoList) {}
-    http.Response response = await http.get(
-        'https://rest.coinapi.io/v1/exchangerate/BTC/$selectACurrency?apikey=$apiKey2');
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print(response.statusCode);
-      throw 'Your reached limit of max API Calls for today';
+  Future<dynamic> coinAPI(String selectedCurrencyByUser) async {
+    Map<String, String> coinListMap = {};
+    for (String coinList in cryptoList) {
+      http.Response response = await http.get(
+          'https://rest.coinapi.io/v1/exchangerate/$coinList/$selectedCurrencyByUser?apikey=$apiKey2');
+      if (response.statusCode == 200) {
+        // coin = decodedData['asset_id_base'];
+        // currency = decodedData['asset_id_quote'];
+        double rates = jsonDecode(response.body)['rate'];
+        coinListMap[coinList] = rates.toStringAsFixed(2);
+      } else {
+        print(response.statusCode);
+        throw 'Your reached limit of max API Calls for today';
+      }
     }
+    return coinListMap;
   }
 }

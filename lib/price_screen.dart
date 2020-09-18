@@ -10,21 +10,18 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  String coin = 'BTC';
-  String currency = 'USD';
-  String rates = '12345';
 //initialization of Currency to show in DropDownMenuList
   String _selectedCurrency = 'USD';
   //Initializing a String to put in URL selected by person
   String selectedByPerson;
-  String _selector = '';
+  // String _selector = '';
   FixedExtentScrollController _controller =
       FixedExtentScrollController(initialItem: 19);
 
   @override
   void initState() {
     super.initState();
-    updateUI(_selectedCurrency);
+    updateUI();
   }
 
   //Android DropdownMenuItem List
@@ -45,14 +42,14 @@ class _PriceScreenState extends State<PriceScreen> {
         setState(() {
           _selectedCurrency = value;
         });
-        updateUI(_selectedCurrency);
+        updateUI();
         return _selectedCurrency;
       },
     );
   }
 
 //iOS CupertinoPicker List
-  NotificationListener cupertinoPickerList() {
+  CupertinoPicker cupertinoPickerList() {
     List<Text> textWidgetList = [];
     for (String curreny in currenciesList) {
       textWidgetList.add(
@@ -64,42 +61,63 @@ class _PriceScreenState extends State<PriceScreen> {
         ),
       );
     }
-    return NotificationListener<ScrollNotification>(
-      onNotification: (scrollNotification) {
-        if (scrollNotification is ScrollEndNotification) {
-          // print(currenciesList[_controller.selectedItem]);
-          setState(() {
-            _selectedCurrency = currenciesList[_controller.selectedItem];
-          });
-          return true;
-        } else {
-          return false;
-        }
+    return
+        //  NotificationListener<ScrollNotification>(
+        //   onNotification: (scrollNotification) {
+        //     if (scrollNotification is ScrollEndNotification) {
+        //       // print(currenciesList[_controller.selectedItem]);
+        //       setState(() {
+        //         _selectedCurrency = currenciesList[_controller.selectedItem];
+        //       });
+        //       return true;
+        //     } else {
+        //       return false;
+        //     }
+        //   },
+        // child:
+        CupertinoPicker(
+      itemExtent: 30,
+      scrollController: _controller,
+      onSelectedItemChanged: (selectedIndex) {
+        setState(() {
+          _selectedCurrency = currenciesList[selectedIndex];
+          updateUI();
+        });
+
+        print(_selectedCurrency);
       },
-      child: CupertinoPicker(
-        itemExtent: 30,
-        scrollController: _controller,
-        onSelectedItemChanged: (selectedIndex) {
-          _selector = currenciesList[selectedIndex];
-          updateUI(_selectedCurrency);
-          print(_selectedCurrency);
-        },
-        children: textWidgetList,
-      ),
+      children: textWidgetList,
     );
   }
 
-  Future updateUI(String selectACurrency) async {
+  Map<String, String> coinValues = {};
+
+  Future updateUI() async {
     try {
       var coinAPIData = await CoinData().coinAPI(_selectedCurrency);
       setState(() {
-        coin = coinAPIData['asset_id_base'];
-        currency = coinAPIData['asset_id_quote'];
-        rates = coinAPIData['rate'].toStringAsFixed(2);
+        coinValues = coinAPIData;
       });
     } catch (e) {
       print(e);
     }
+  }
+
+  Column makeCards() {
+    List<Widget> cardList = [];
+    for (String coinList in cryptoList) {
+      cardList.add(
+        CryptoCard(
+          coin: coinList,
+          rates: coinValues[coinList],
+          currency: _selectedCurrency,
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: cardList,
+    );
   }
 
   @override
@@ -112,14 +130,22 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              CryptoCard(coin: coin, rates: rates, currency: currency),
-              CryptoCard(coin: coin, rates: rates, currency: currency),
-              CryptoCard(coin: coin, rates: rates, currency: currency),
-            ],
-          ),
+          makeCards(),
+          // [
+          //   CryptoCard(
+          //       coin: 'BTC',
+          //       rates: coinValues['BTC'],
+          //       currency: _selectedCurrency),
+          //   CryptoCard(
+          //       coin: 'ETH',
+          //       rates: coinValues['ETH'],
+          //       currency: _selectedCurrency),
+          //   CryptoCard(
+          //       coin: 'LTC',
+          //       rates: coinValues['LTC'],
+          //       currency: _selectedCurrency),
+          // ],
+
           Container(
             height: 150.0,
             alignment: Alignment.center,
